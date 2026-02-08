@@ -12,6 +12,8 @@ import {
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 
+export const dynamic = "force-dynamic";
+
 async function getRecentReports(userId: string, role: string) {
     const where = role === "worker" ? { createdById: parseInt(userId) } : {};
 
