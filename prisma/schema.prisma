@@ -1,0 +1,213 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ユーザーテーブル
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  fullName     String
+  email        String?
+  role         String   @default("worker") // admin, manager, worker
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  createdReports  DailyReport[] @relation("CreatedBy")
+  approvedReports DailyReport[] @relation("ApprovedBy")
+}
+
+// 工事マスタ
+model Project {
+  id          Int       @id @default(autoincrement())
+  projectCode String?
+  projectName String
+  clientName  String?
+  siteAddress String?
+  startDate   DateTime?
+  endDate     DateTime?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// 作業員マスタ
+model Worker {
+  id         Int      @id @default(autoincrement())
+  workerName String
+  company    String?
+  position   String?
+  hourlyRate Float?
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// 自社機械マスタ
+model EquipmentMaster {
+  id            Int      @id @default(autoincrement())
+  equipmentName String
+  modelNumber   String?
+  hourlyRate    Float?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// 仕入先マスタ
+model Supplier {
+  id            Int      @id @default(autoincrement())
+  supplierName  String
+  address       String?
+  phone         String?
+  contactPerson String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// リース先マスタ
+model Lender {
+  id            Int      @id @default(autoincrement())
+  lenderName    String
+  address       String?
+  phone         String?
+  contactPerson String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// 外注先マスタ
+model SubcontractorMaster {
+  id            Int      @id @default(autoincrement())
+  companyName   String
+  address       String?
+  phone         String?
+  contactPerson String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// 燃料単価マスタ
+model FuelPrice {
+  id            Int      @id @default(autoincrement())
+  fuelType      String   // ガソリン, 軽油, オイル
+  unitPrice     Float
+  effectiveDate DateTime
+  createdAt     DateTime @default(now())
+}
+
+// 日報メインテーブル
+model DailyReport {
+  id             Int       @id @default(autoincrement())
+  reportDate     DateTime
+  dayOfWeek      String
+  weather        String?
+  reporterName   String
+  projectName    String
+  workStartTime  String?
+  workEndTime    String?
+  absentWorkers  String?
+  repairContent  String?
+  cleanupContent String?
+  workContent    String?
+  status         String    @default("draft") // draft, submitted, approved, rejected
+  createdById    Int
+  createdBy      User      @relation("CreatedBy", fields: [createdById], references: [id])
+  approvedById   Int?
+  approvedBy     User?     @relation("ApprovedBy", fields: [approvedById], references: [id])
+  approvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  laborCosts       LaborCost[]
+  companyEquipment CompanyEquipment[]
+  materials        Material[]
+  leasedEquipment  LeasedEquipment[]
+  fuelCosts        FuelCost[]
+  subcontractors   Subcontractor[]
+}
+
+// 労務費テーブル
+model LaborCost {
+  id         Int         @id @default(autoincrement())
+  reportId   Int
+  report     DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  workerName String
+  hours      Float
+  unitPrice  Float
+  amount     Float
+  createdAt  DateTime    @default(now())
+}
+
+// 自社機械経費テーブル
+model CompanyEquipment {
+  id            Int         @id @default(autoincrement())
+  reportId      Int
+  report        DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  equipmentName String
+  hours         Float
+  unitPrice     Float
+  amount        Float
+  createdAt     DateTime    @default(now())
+}
+
+// 材料費テーブル
+model Material {
+  id           Int         @id @default(autoincrement())
+  reportId     Int
+  report       DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  supplier     String?
+  materialName String
+  quantity     Float
+  unitPrice    Float
+  amount       Float
+  createdAt    DateTime    @default(now())
+}
+
+// リース機械テーブル
+model LeasedEquipment {
+  id            Int         @id @default(autoincrement())
+  reportId      Int
+  report        DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  lender        String?
+  equipmentName String
+  hours         Float
+  unitPrice     Float
+  amount        Float
+  createdAt     DateTime    @default(now())
+}
+
+// 燃料費テーブル
+model FuelCost {
+  id            Int         @id @default(autoincrement())
+  reportId      Int
+  report        DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  productName   String
+  vehicleNumber String?
+  quantity      Float
+  unitPrice     Float
+  amount        Float
+  createdAt     DateTime    @default(now())
+}
+
+// 外注テーブル
+model Subcontractor {
+  id          Int         @id @default(autoincrement())
+  reportId    Int
+  report      DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  companyName String?
+  workerCount Int?
+  workerName  String?
+  createdAt   DateTime    @default(now())
+}
