@@ -53,180 +53,207 @@ export default async function DashboardPage() {
     const userId = session?.user?.id || "0";
     const role = session?.user?.role || "worker";
 
-    const [recentReports, stats] = await Promise.all([
-        getRecentReports(userId, role),
-        getStats(userId, role),
-    ]);
+    try {
+        const [recentReports, stats] = await Promise.all([
+            getRecentReports(userId, role),
+            getStats(userId, role),
+        ]);
 
-    return (
-        <div className="space-y-8">
-            {/* ヘッダー */}
-            <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-slate-800">
-                    ダッシュボード
-                </h1>
-                <p className="text-slate-500 mt-1">
-                    {format(new Date(), "yyyy年M月d日（E）", { locale: ja })}
-                </p>
-            </div>
+        return (
+            <div className="space-y-8">
+                {/* ヘッダー */}
+                <div>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-slate-800">
+                        ダッシュボード
+                    </h1>
+                    <p className="text-slate-500 mt-1">
+                        {format(new Date(), "yyyy年M月d日（E）", { locale: ja })}
+                    </p>
+                </div>
 
-            {/* 統計カード */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/50">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-slate-500">総日報数</p>
-                            <p className="text-3xl font-bold text-slate-800 mt-1">
-                                {stats.total}
-                            </p>
+                {/* 統計カード */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/50">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-slate-500">総日報数</p>
+                                <p className="text-3xl font-bold text-slate-800 mt-1">
+                                    {stats.total}
+                                </p>
+                            </div>
+                            <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center">
+                                <FileText className="w-6 h-6 text-slate-600" />
+                            </div>
                         </div>
-                        <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center">
-                            <FileText className="w-6 h-6 text-slate-600" />
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/50">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-slate-500">下書き</p>
+                                <p className="text-3xl font-bold text-slate-800 mt-1">
+                                    {stats.draft}
+                                </p>
+                            </div>
+                            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                                <Clock className="w-6 h-6 text-gray-600" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/50">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-slate-500">承認待ち</p>
+                                <p className="text-3xl font-bold text-amber-600 mt-1">
+                                    {stats.submitted}
+                                </p>
+                            </div>
+                            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                                <AlertCircle className="w-6 h-6 text-amber-600" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/50">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-slate-500">承認済み</p>
+                                <p className="text-3xl font-bold text-green-600 mt-1">
+                                    {stats.approved}
+                                </p>
+                            </div>
+                            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                <CheckCircle className="w-6 h-6 text-green-600" />
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/50">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-slate-500">下書き</p>
-                            <p className="text-3xl font-bold text-slate-800 mt-1">
-                                {stats.draft}
-                            </p>
+                {/* クイックアクション */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Link
+                        href="/reports/new"
+                        className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all"
+                    >
+                        <div className="flex items-center space-x-4">
+                            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+                                <Plus className="w-7 h-7" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold">新しい日報を作成</h3>
+                                <p className="text-orange-100 text-sm mt-1">
+                                    今日の作業内容を記録
+                                </p>
+                            </div>
                         </div>
-                        <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
-                            <Clock className="w-6 h-6 text-gray-600" />
+                    </Link>
+
+                    <Link
+                        href="/reports"
+                        className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/50 hover:shadow-lg transform hover:scale-[1.02] transition-all"
+                    >
+                        <div className="flex items-center space-x-4">
+                            <div className="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center">
+                                <TrendingUp className="w-7 h-7 text-slate-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-slate-800">日報一覧を見る</h3>
+                                <p className="text-slate-500 text-sm mt-1">
+                                    過去の日報を確認・編集
+                                </p>
+                            </div>
                         </div>
-                    </div>
+                    </Link>
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/50">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-slate-500">承認待ち</p>
-                            <p className="text-3xl font-bold text-amber-600 mt-1">
-                                {stats.submitted}
-                            </p>
-                        </div>
-                        <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                            <AlertCircle className="w-6 h-6 text-amber-600" />
-                        </div>
+                {/* 最近の日報 */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200/50 overflow-hidden">
+                    <div className="p-6 border-b border-slate-100">
+                        <h2 className="text-lg font-bold text-slate-800">最近の日報</h2>
                     </div>
-                </div>
-
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/50">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm text-slate-500">承認済み</p>
-                            <p className="text-3xl font-bold text-green-600 mt-1">
-                                {stats.approved}
-                            </p>
-                        </div>
-                        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                            <CheckCircle className="w-6 h-6 text-green-600" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* クイックアクション */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Link
-                    href="/reports/new"
-                    className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all"
-                >
-                    <div className="flex items-center space-x-4">
-                        <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
-                            <Plus className="w-7 h-7" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold">新しい日報を作成</h3>
-                            <p className="text-orange-100 text-sm mt-1">
-                                今日の作業内容を記録
-                            </p>
-                        </div>
-                    </div>
-                </Link>
-
-                <Link
-                    href="/reports"
-                    className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/50 hover:shadow-lg transform hover:scale-[1.02] transition-all"
-                >
-                    <div className="flex items-center space-x-4">
-                        <div className="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center">
-                            <TrendingUp className="w-7 h-7 text-slate-600" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold text-slate-800">日報一覧を見る</h3>
-                            <p className="text-slate-500 text-sm mt-1">
-                                過去の日報を確認・編集
-                            </p>
-                        </div>
-                    </div>
-                </Link>
-            </div>
-
-            {/* 最近の日報 */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200/50 overflow-hidden">
-                <div className="p-6 border-b border-slate-100">
-                    <h2 className="text-lg font-bold text-slate-800">最近の日報</h2>
-                </div>
-                {recentReports.length > 0 ? (
-                    <div className="divide-y divide-slate-100">
-                        {recentReports.map((report) => (
-                            <Link
-                                key={report.id}
-                                href={`/reports/${report.id}`}
-                                className="flex items-center justify-between p-4 lg:p-6 hover:bg-slate-50 transition-colors"
-                            >
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-3">
-                                        <p className="font-semibold text-slate-800 truncate">
-                                            {report.projectName}
-                                        </p>
-                                        <span
-                                            className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusLabels[report.status]?.color
-                                                }`}
-                                        >
-                                            {statusLabels[report.status]?.label}
-                                        </span>
-                                    </div>
-                                    <p className="text-sm text-slate-500 mt-1">
-                                        {format(new Date(report.reportDate), "yyyy年M月d日", {
-                                            locale: ja,
-                                        })}{" "}
-                                        • {report.reporterName}
-                                    </p>
-                                </div>
-                                <svg
-                                    className="w-5 h-5 text-slate-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
+                    {recentReports.length > 0 ? (
+                        <div className="divide-y divide-slate-100">
+                            {recentReports.map((report) => (
+                                <Link
+                                    key={report.id}
+                                    href={`/reports/${report.id}`}
+                                    className="flex items-center justify-between p-4 lg:p-6 hover:bg-slate-50 transition-colors"
                                 >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 5l7 7-7 7"
-                                    />
-                                </svg>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-3">
+                                            <p className="font-semibold text-slate-800 truncate">
+                                                {report.projectName}
+                                            </p>
+                                            <span
+                                                className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusLabels[report.status]?.color
+                                                    }`}
+                                            >
+                                                {statusLabels[report.status]?.label}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-slate-500 mt-1">
+                                            {format(new Date(report.reportDate), "yyyy年M月d日", {
+                                                locale: ja,
+                                            })}{" "}
+                                            • {report.reporterName}
+                                        </p>
+                                    </div>
+                                    <svg
+                                        className="w-5 h-5 text-slate-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 5l7 7-7 7"
+                                        />
+                                    </svg>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="p-12 text-center">
+                            <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                            <p className="text-slate-500">日報がありません</p>
+                            <Link
+                                href="/reports/new"
+                                className="inline-block mt-4 text-orange-500 hover:text-orange-600 font-medium"
+                            >
+                                最初の日報を作成する →
                             </Link>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="p-12 text-center">
-                        <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                        <p className="text-slate-500">日報がありません</p>
-                        <Link
-                            href="/reports/new"
-                            className="inline-block mt-4 text-orange-500 hover:text-orange-600 font-medium"
-                        >
-                            最初の日報を作成する →
-                        </Link>
-                    </div>
-                )}
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
-    );
+        );
+    } catch (error) {
+        console.error("Dashboard Error:", error);
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+                    <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                    <h1 className="text-2xl font-bold text-slate-800 mb-2">システムエラーが発生しました</h1>
+                    <p className="text-slate-600 mb-6">
+                        ダッシュボードの読み込み中にエラーが発生しました。<br />
+                        以下のエラー内容を管理者に報告してください。
+                    </p>
+                    <div className="bg-slate-100 rounded p-4 mb-6 text-left overflow-auto max-h-40">
+                        <code className="text-xs text-slate-700 break-all">
+                            {error instanceof Error ? error.message : JSON.stringify(error)}
+                        </code>
+                    </div>
+                    <Link
+                        href="/login"
+                        className="inline-block bg-slate-800 text-white px-6 py-2 rounded-lg hover:bg-slate-700 transition"
+                    >
+                        ログイン画面に戻る
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 }
