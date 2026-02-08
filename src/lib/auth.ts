@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs"
 import { prisma } from "./prisma"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    trustHost: true,
+    secret: process.env.AUTH_SECRET,
     providers: [
         Credentials({
             name: "credentials",
@@ -66,3 +68,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         maxAge: 30 * 60, // 30分
     },
 })
+
