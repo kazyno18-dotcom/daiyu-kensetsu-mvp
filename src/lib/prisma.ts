@@ -1,30 +1,23 @@
 import { PrismaClient } from '@prisma/client'
 
-// Vercel等の環境で環境変数が読み込まれない場合の対策としてdotenvを試行
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  require('dotenv').config();
-} catch (e) {
-  // ignore
-}
-
+// PrismaClientをシングルトンとして管理
 const prismaClientSingleton = () => {
   const url = process.env.DATABASE_URL;
 
+  // サーバーサイドログに状態を出力（VercelのLogsで確認可能）
   if (!url) {
-    console.error('❌ FATAL: DATABASE_URL is missing in process.env');
+    console.error('❌ FATAL: DATABASE_URL is missing or empty in process.env');
   } else {
-    // セキュリティのためURLの一部のみログ出力
-    console.log(`✅ Prisma initializing with DATABASE_URL: ${url.substring(0, 15)}...`);
+    console.log(`✅ DATABASE_URL found (Length: ${url.length}). Starts with: ${url.substring(0, 10)}...`);
   }
 
   return new PrismaClient({
     log: ['error', 'warn'],
-    datasources: {
+    datasources: url ? {
       db: {
         url: url,
       },
-    },
+    } : undefined,
   })
 }
 
