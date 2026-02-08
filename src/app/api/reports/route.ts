@@ -26,17 +26,12 @@ export async function GET(req: Request) {
                 include: {
                     createdBy: {
                         select: {
-                            name: true,
-                        },
-                    },
-                    project: {
-                        select: {
-                            name: true,
+                            fullName: true,
                         },
                     },
                 },
                 orderBy: {
-                    date: "desc",
+                    reportDate: "desc",
                 },
                 take: limit,
                 skip: offset,
