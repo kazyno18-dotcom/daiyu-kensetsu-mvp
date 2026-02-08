@@ -17,7 +17,7 @@ export async function GET(req: Request) {
         const offset = Number(searchParams.get("offset")) || 0;
 
         const where = session.user.role === "worker"
-            ? { createdById: session.user.id }
+            ? { createdById: Number(session.user.id) }
             : {};
 
         const [reports, total] = await Promise.all([
