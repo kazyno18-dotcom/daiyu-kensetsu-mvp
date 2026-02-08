@@ -14,32 +14,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 password: { label: "パスワード", type: "password" }
             },
             async authorize(credentials) {
-                if (!credentials?.username || !credentials?.password) {
+                try {
+                    if (!credentials?.username || !credentials?.password) {
+                        console.log("Missing credentials")
+                        return null
+                    }
+
+                    const user = await prisma.user.findUnique({
+                        where: { username: credentials.username as string }
+                    })
+
+                    if (!user) {
+                        console.log("User not found:", credentials.username)
+                        return null
+                    }
+
+                    const passwordMatch = await bcrypt.compare(
+                        credentials.password as string,
+                        user.passwordHash
+                    )
+
+                    if (!passwordMatch) {
+                        console.log("Password mismatch for user:", credentials.username)
+                        return null
+                    }
+
+                    console.log("Login successful for user:", user.username)
+                    return {
+                        id: String(user.id),
+                        name: user.fullName,
+                        email: user.email,
+                        role: user.role
+                    }
+                } catch (error) {
+                    console.error("Auth error:", error)
                     return null
-                }
-
-                const user = await prisma.user.findUnique({
-                    where: { username: credentials.username as string }
-                })
-
-                if (!user) {
-                    return null
-                }
-
-                const passwordMatch = await bcrypt.compare(
-                    credentials.password as string,
-                    user.passwordHash
-                )
-
-                if (!passwordMatch) {
-                    return null
-                }
-
-                return {
-                    id: String(user.id),
-                    name: user.fullName,
-                    email: user.email,
-                    role: user.role
                 }
             }
         })
@@ -62,10 +71,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     pages: {
         signIn: '/login',
+        error: '/login',
     },
     session: {
         strategy: "jwt",
         maxAge: 30 * 60, // 30分
     },
+    debug: process.env.NODE_ENV === 'development',
 })
-
